@@ -17,10 +17,10 @@ def searchRecursively(currentPageIndex, searchParams, items) :
     }
     searchParams["pagination"]["page"] = currentPageIndex
     response = requests.post(f"{hostURL}/api/v1/search", headers=headers, auth=HTTPBasicAuth(username, apiKey), json=searchParams).json()
-    if (len(response["content"]) == 0) :
+    if (len(response['content']) == 0) :
         return items
 
-    items = items + response["content"]
+    items = items + response['content']
     return searchRecursively(currentPageIndex + 1, searchParams, items)
 
 def getTestCasesByPath(projectID, path, repoID):
