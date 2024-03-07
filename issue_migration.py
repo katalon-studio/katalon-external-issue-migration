@@ -44,25 +44,17 @@ def updateExternalIssues():
     
     for sourceTestCase in sourceTestCases:
         destinationTestCase = findDestinationTestCase(sourceTestCase, destinationPath, sourcePath, destinationTestCases)
-        print('destination test case', destinationTestCase)
         if destinationTestCase is not None:
-            destinationTestCase.get('externalRequirementIssueID').extend(item for item in sourceTestCase.get('externalRequirementIssueID') if item not in destinationTestCase.get('externalRequirementIssueID'))
-            destinationTestCase.get('externalXrayTestIssueID').extend(item for item in sourceTestCase.get('externalXrayTestIssueID') if item not in destinationTestCase.get('externalXrayTestIssueID'))
-            destinationTestCase.update({"sourceTestCaseID": sourceTestCase.get('id')})
+            print("Start migrate from source Test Case: ", sourceTestCase)
+            print("to Test Case: ", destinationTestCase)
+            for issue in sourceTestCase.get('externalRequirementIssueID'):
+                apis.updateExternalRequirements(issue, destinationTestCase.get('id'), projectID)
+            for issue in sourceTestCase.get('externalXrayTestIssueID'):
+                # Unlink Xray Test from source Test Cases
+                apis.deleteExternalXrayTests(issue, sourceTestCase['id'], projectID)
 
-    print("Updated Test Cases: ")
-    print(destinationTestCases)
-    
-    for destinationTestCase in destinationTestCases:
-        for issue in destinationTestCase.get('externalRequirementIssueID'):
-            apis.updateExternalRequirements(issue, destinationTestCase.get('id'), projectID)
-            
-        for issue in destinationTestCase.get('externalXrayTestIssueID'):
-            # Unlink Xray Test from source Test Cases
-            apis.deleteExternalXrayTests(issue, destinationTestCase.get('sourceTestCaseID'), projectID)
-
-            # Link Xray Test to destination Test Cases
-            apis.updateExternalXrayTests(issue, destinationTestCase.get('id'), projectID)
+                # Link Xray Test to destination Test Cases
+                apis.updateExternalXrayTests(issue, destinationTestCase.get('id'), projectID)
     
     print("Process finished!")
     
